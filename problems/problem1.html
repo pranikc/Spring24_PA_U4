@@ -35,8 +35,14 @@
     let settings = {
         //mesh_visible: true,
         //wireframe_visible: true,
-        theta1 : 0,
-        theta2 : 0,
+        0 : 0,
+        1 : 0,
+        2 : 0,
+        3 : 0,
+        4 : 0,
+        5 : 0,
+        6 : 0,
+        7 : 0,
     }
 
     let gui = get_default_lil_gui();
@@ -44,13 +50,19 @@
     //gui.add(settings, 'mesh_visible').name('Draw Mesh');
 
     let folder = gui.addFolder('Coords');
-    folder.add(settings, 'theta1', -2.0*Math.PI, 2.0*Math.PI).name('theta1');
-    folder.add(settings, 'theta2', -2.0*Math.PI, 2.0*Math.PI).name('theta2');
+    folder.add(settings, '0', 0, 0.7).name('theta0'); // got these values from looking and upperbound/lowerbound directly
+    folder.add(settings, '1', -2.0*Math.PI, 2.0*Math.PI).name('theta1');
+    folder.add(settings, '2', -2.0*Math.PI, 2.0*Math.PI).name('theta2');
+    folder.add(settings, '3', -2.0*Math.PI, 2.0*Math.PI).name('theta3');
+    folder.add(settings, '4', -2.0*Math.PI, 2.0*Math.PI).name('theta4');
+    folder.add(settings, '5', -2.0*Math.PI, 2.0*Math.PI).name('theta5');
+    folder.add(settings, '6', -2.0*Math.PI, 2.0*Math.PI).name('theta6');
+    folder.add(settings, '7', -2.0*Math.PI, 2.0*Math.PI).name('theta7');
 
     let engine = ThreeEngine.new_default_3d();
 
     // if you want to use the XArm7 robot:
-    let robot = new XArm7Robot();
+    let robot = new XArm7Robot(); // doesn't include floating for example
 
     // or, if you want to use the B1Z1 robot, comment the previous robot and uncomment this line:
     // let robot = new B1Z1Robot();
@@ -158,18 +170,18 @@
                 let T_c = curr_joint.xyz_rpy_SE3_matrix;
                 curr_pose = group_operator(curr_pose, T_c);
 
-                // T_v will depend on some values in the state
                 let T_v;
                 if (joint_type === 'revolute') {
                     //let joint_value = state[joint.dof_idx];
-                    //let joint_value = curr_joint.dof_idx;
+                    let joint_value = curr_joint.dof_idx;
                     let joint_axis = curr_joint.axis;
-                    let SE3_mat = SE3(settings.theta1*joint_axis[0],settings.theta1*joint_axis[1],settings.theta1*joint_axis[2],0,0,0);
+                    let SE3_mat = SE3(settings[joint_value]*joint_axis[0],settings[joint_value]*joint_axis[1],settings[joint_value]*joint_axis[2],0,0,0);
                     T_v = [[SE3_mat[0][0][0],SE3_mat[0][0][1],SE3_mat[0][0][2],SE3_mat[1][0]],[SE3_mat[0][1][0],SE3_mat[0][1][1],SE3_mat[0][1][2],SE3_mat[1][1]],[SE3_mat[0][2][0],SE3_mat[0][2][1],SE3_mat[0][2][2],SE3_mat[1][2]],[0,0,0,1]];
                 } 
                 else if (joint_type === 'prismatic') {
                     let joint_axis = curr_joint.axis;
-                    let SE3_mat = SE3(0,0,0,settings.theta2*joint_axis[0],settings.theta2*joint_axis[1],settings.theta2*joint_axis[2]);
+                    let joint_value = curr_joint.dof_idx;
+                    let SE3_mat = SE3(0,0,0,settings[joint_value]*joint_axis[0],settings[joint_value]*joint_axis[1],settings[joint_value]*joint_axis[2]);
                     T_v = [[SE3_mat[0][0][0],SE3_mat[0][0][1],SE3_mat[0][0][2],SE3_mat[1][0]],[SE3_mat[0][1][0],SE3_mat[0][1][1],SE3_mat[0][1][2],SE3_mat[1][1]],[SE3_mat[0][2][0],SE3_mat[0][2][1],SE3_mat[0][2][2],SE3_mat[1][2]],[0,0,0,1]];
                 }
                 else {
@@ -180,7 +192,7 @@
                 output_poses[link_idx] = curr_pose;
 
                 robot.set_link_mesh_pose_from_SE3_matrix(engine, link_idx, curr_pose);
-                //output_poses[link_idx] = curr_pose;
+                output_poses[link_idx] = curr_pose;
             });
         });
     }
